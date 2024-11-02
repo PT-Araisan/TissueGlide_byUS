@@ -44,11 +44,10 @@ def draw_arrows(frame, flow, roi, mag, color):
                                  y + y_pos + int(flow[y_pos, x_pos, 1])),
                                 color, 1, tipLength=3)
 
-# メイン処理
-cap, prvs = initialize_video_capture("assets/c.mp4")
-prvs = enhance_contrast_clahe(prvs)  # 初期フレームのコントラスト改善
+cap, prvs = initialize_video_capture("assets/sample3.mp4")
+prvs = enhance_contrast_clahe(prvs)  
 
-# ROIの定義
+# ROIの定義 任意の座標を入力する
 roi1 = (406, 100, 100, 30)
 roi2 = (406, 130, 100, 30)
 total_motion_magnitude1 = 0.0
@@ -61,21 +60,17 @@ while True:
         break
 
     next = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
-    next = enhance_contrast_clahe(next)  # フレームごとのコントラスト改善
+    next = enhance_contrast_clahe(next) 
 
-    # オプティカルフローを計算
     mag1, mag2, flow1, flow2, mag1_full, mag2_full = calculate_optical_flow(prvs, next, roi1, roi2)
 
-    # 動きの大きさを累積
     total_motion_magnitude1 += mag1
     total_motion_magnitude2 += mag2
     frame_count += 1
 
-    # 矢印を描画
     draw_arrows(frame2, flow1, roi1, mag1_full, (0, 255, 0))
     draw_arrows(frame2, flow2, roi2, mag2_full, (255, 0, 0))
 
-    # ROIを元のフレームに描画
     frame2_with_roi = frame2.copy()
     cv2.rectangle(frame2_with_roi, roi1[:2], (roi1[0]+roi1[2], roi1[1]+roi1[3]), (255, 0, 0), 2)
     cv2.rectangle(frame2_with_roi, roi2[:2], (roi2[0]+roi2[2], roi2[1]+roi2[3]), (0, 255, 0), 2)
@@ -83,15 +78,13 @@ while True:
     cv2.imshow('frame2', frame2_with_roi)
 
     k = cv2.waitKey(30) & 0xff
-    if k == 27:  # 'ESC'キーで終了
+    if k == 27: 
         break
     prvs = next
 
-# 動きの総合的な大きさを出力
 print(f"上のROIの動きの大きさ: {total_motion_magnitude1:.2f}")
 print(f"下のROIの動きの大きさ: {total_motion_magnitude2:.2f}")
 
-# トータルの動きの比を計算
 if total_motion_magnitude2 > 0:
     total_motion_ratio = total_motion_magnitude1 / total_motion_magnitude2
 else:
